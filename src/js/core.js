@@ -566,11 +566,14 @@ s.loadImage = function (imgElement, src, srcset, sizes, checkForComplete, callba
 };
 s.preloadImages = function () {
     s.imagesToLoad = s.container.find('img');
+    s.imagesLoaded = 0;
     function _onReady() {
         if (typeof s === 'undefined' || s === null || !s) return;
+        if (s.params.updateOnImagesReady)
+            s.updateSlidesSize();
         if (s.imagesLoaded !== undefined) s.imagesLoaded++;
         if (s.imagesLoaded === s.imagesToLoad.length) {
-            if (s.params.updateOnImagesReady) s.update();
+            if (s.params.updateOnImagesReady) s.update(false, true);
             s.emit('onImagesReady', s);
         }
     }
@@ -1197,8 +1200,12 @@ s.updatePagination = function () {
 /*=========================
   Common update method
   ===========================*/
-s.update = function (updateTranslate) {
+s.update = function (updateTranslate, preventPreloadImages) {
     if (!s) return;
+
+    if (!preventPreloadImages && s.params.preloadImages && !s.params.lazyLoading)
+        s.preloadImages();
+
     s.updateContainerSize();
     s.updateSlidesSize();
     s.updateProgress();
