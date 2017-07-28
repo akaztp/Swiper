@@ -10,7 +10,7 @@
  * 
  * Licensed under MIT
  * 
- * Released on: March 10, 2017
+ * Released on: July 28, 2017
  */
 (function () {
     'use strict';
@@ -591,11 +591,14 @@
         };
         s.preloadImages = function () {
             s.imagesToLoad = s.container.find('img');
+            s.imagesLoaded = 0;
             function _onReady() {
                 if (typeof s === 'undefined' || s === null || !s) return;
+                if (s.params.updateOnImagesReady)
+                    s.updateSlidesSize();
                 if (s.imagesLoaded !== undefined) s.imagesLoaded++;
                 if (s.imagesLoaded === s.imagesToLoad.length) {
-                    if (s.params.updateOnImagesReady) s.update();
+                    if (s.params.updateOnImagesReady) s.update(false, true);
                     s.emit('onImagesReady', s);
                 }
             }
@@ -1222,8 +1225,12 @@
         /*=========================
           Common update method
           ===========================*/
-        s.update = function (updateTranslate) {
+        s.update = function (updateTranslate, preventPreloadImages) {
             if (!s) return;
+        
+            if (!preventPreloadImages && s.params.preloadImages && !s.params.lazyLoading)
+                s.preloadImages();
+        
             s.updateContainerSize();
             s.updateSlidesSize();
             s.updateProgress();
@@ -1232,6 +1239,9 @@
             if (s.params.scrollbar && s.scrollbar) {
                 s.scrollbar.set();
             }
+            if (s.lazy && s.params.lazyLoading)
+                s.lazy.load();
+        
             var newTranslate;
             function forceSetTranslate() {
                 var translate = s.rtl ? -s.translate : s.translate;
@@ -1272,6 +1282,8 @@
           Resize Handler
           ===========================*/
         s.onResize = function (forceUpdatePagination) {
+            if (s.container[0] && s.container[0].offsetWidth === 0) return;
+        
             if (s.params.onBeforeResize) s.params.onBeforeResize(s);
             //Breakpoints
             if (s.params.breakpoints) {
