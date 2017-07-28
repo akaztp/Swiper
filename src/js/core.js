@@ -1214,6 +1214,9 @@ s.update = function (updateTranslate, preventPreloadImages) {
     if (s.params.scrollbar && s.scrollbar) {
         s.scrollbar.set();
     }
+    if (s.lazy && s.params.lazyLoading)
+        s.lazy.load();
+
     var newTranslate;
     function forceSetTranslate() {
         var translate = s.rtl ? -s.translate : s.translate;
